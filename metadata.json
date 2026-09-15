@@ -1,0 +1,6 @@
+{
+  "name": "중1 챔피언 아케이드",
+  "description": "오목, 숫자야구, 님게임, 체스, 마리오 점프런까지 즐기는 중1 종합 게임 & 실시간 랭킹 포털",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
