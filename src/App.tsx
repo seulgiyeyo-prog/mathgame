@@ -173,12 +173,14 @@ export default function App() {
 
       {/* Footer */}
       <footer className="mt-auto py-6 border-t border-slate-900 bg-slate-950/80 text-center text-xs text-slate-500">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
             🎮 <strong>중1 챔피언 아케이드</strong> · 오목 · 숫자야구 · 님게임 · 체스 · 마리오 점프런
           </div>
-          <div className="text-slate-600">
-            실시간 랭킹 · 4가지 테마 모드 · 마리오 배경음악 탑재 · 배포 준비 완료
+          <div className="flex items-center gap-2 text-slate-400 font-medium">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
+              Developed & Designed by <strong className="ml-1 text-amber-400 font-bold">Seulgi Jeong</strong>
+            </span>
           </div>
         </div>
       </footer>
