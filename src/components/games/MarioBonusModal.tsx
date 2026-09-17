@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Sparkles, Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, HelpCircle, Flame } from 'lucide-react';
 import { BonusQuiz, MarioStage } from '../../utils/marioStages';
@@ -30,6 +30,15 @@ export default function MarioBonusModal({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [answered, setAnswered] = useState<boolean>(false);
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
+
+  // CRITICAL FIX: Reset quiz state whenever modal opens or quiz changes!
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedIndex(null);
+      setAnswered(false);
+      setIsCorrect(false);
+    }
+  }, [isOpen, quiz?.id]);
 
   if (!isOpen) return null;
 
