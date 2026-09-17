@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Trophy, Play, Sparkles, Brain, Flame, Target, Swords, Zap } from 'lucide-react';
-import { GameType } from '../types';
+import { GameType, LeaderboardEntry } from '../types';
+import { loadLeaderboards } from '../utils/storage';
 import { soundEffects } from '../utils/audio';
 
 interface GameSelectorProps {
@@ -18,8 +20,6 @@ interface GameCardMeta {
   icon: string;
   description: string;
   features: string[];
-  topRanker: string;
-  statsText: string;
 }
 
 const GAMES: GameCardMeta[] = [
@@ -34,8 +34,6 @@ const GAMES: GameCardMeta[] = [
     icon: '🍄',
     description: '더 넓어진 대형 와이드 스크린에서 신나는 2D 횡스크롤 질주! 굼바를 밟고 황금 코인을 쓸어 담으세요.',
     features: ['넓어진 840px 와이드 뷰', '점프 & 몬스터 퇴치', '실시간 플레이어 랭킹'],
-    topRanker: '1위: 점프대장 동현 (4,850점)',
-    statsText: '1,420명 플레이 중',
   },
   {
     id: 'baseball',
@@ -48,8 +46,6 @@ const GAMES: GameCardMeta[] = [
     icon: '⚾',
     description: '중1 수학 논리의 끝판왕! 3자리/4자리 숫자를 스트라이크 & 볼 단서로 최소 횟수에 맞혀보세요.',
     features: ['3자리 / 4자리 모드', '실시간 투수 리액션', '최소 시도 횟수 랭킹'],
-    topRanker: '1위: 야구천재 민서 (3회 정답)',
-    statsText: '980명 플레이 중',
   },
   {
     id: 'omok',
@@ -62,8 +58,6 @@ const GAMES: GameCardMeta[] = [
     icon: '⚔️',
     description: '15x15 정통 반상에서 펼쳐지는 명승부! 영리한 AI 컴퓨터 또는 친구와 2인 대결을 즐기세요.',
     features: ['AI 대전 / 2인 친구 대결', '승리 애니메이션 & 착수음', '연승 기록 보관소'],
-    topRanker: '1위: 오목의신 예준 (12연승)',
-    statsText: '1,150명 플레이 중',
   },
   {
     id: 'nim',
@@ -76,8 +70,6 @@ const GAMES: GameCardMeta[] = [
     icon: '📐',
     description: '돌멩이를 번갈아 가져가는 필승 전략 수학 게임! 베스킨라빈스31 모드와 3더미 모드 지원.',
     features: ['1~3개 집기 모드', '3더미(Nim-Sum) 모드', '수학 천재 AI 탑재'],
-    topRanker: '1위: 수학전교1등 현우 (990점)',
-    statsText: '760명 플레이 중',
   },
   {
     id: 'chess',
@@ -90,12 +82,46 @@ const GAMES: GameCardMeta[] = [
     icon: '♟️',
     description: '체스판 테마 색상 변경(원목/에메랄드/블루/흑요석)과 입체 3D 기물, 상세 이동 가이드북 탑재!',
     features: ['4가지 체스판 테마 색상', '정교한 입체 3D 말 & 가이드', '폰 퀸 승급 & AI 대결'],
-    topRanker: '1위: 그랜드마스터 태오 (1,450점)',
-    statsText: '890명 플레이 중',
   },
 ];
 
 export default function GameSelector({ onSelectGame, onOpenLeaderboard }: GameSelectorProps) {
+  const [leaderboards, setLeaderboards] = useState<LeaderboardEntry[]>(() => loadLeaderboards());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setLeaderboards(loadLeaderboards());
+    };
+    window.addEventListener('leaderboardUpdated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('leaderboardUpdated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const getRankInfo = (gameId: GameType) => {
+    const list = leaderboards.filter((e) => e && e.game === gameId);
+    if (list.length === 0) {
+      return {
+        topRanker: '1위: 아직 등록된 기록 없음 (도전하세요!)',
+        statsText: '도전 대기 중',
+      };
+    }
+    const isAsc = gameId === 'baseball';
+    const sorted = [...list].sort((a, b) => {
+      const sA = typeof a?.score === 'number' ? a.score : 0;
+      const sB = typeof b?.score === 'number' ? b.score : 0;
+      return isAsc ? sA - sB : sB - sA;
+    });
+    const top = sorted[0];
+    const unit = gameId === 'baseball' ? '회' : '점';
+    const scoreText = top.subText || `${top.score}${unit}`;
+    return {
+      topRanker: `1위: ${top.playerName} (${scoreText})`,
+      statsText: `기록 ${list.length}개`,
+    };
+  };
   return (
     <div className="space-y-6">
       {/* Banner */}
@@ -189,13 +215,18 @@ export default function GameSelector({ onSelectGame, onOpenLeaderboard }: GameSe
               </div>
 
               {/* Top Ranker Banner */}
-              <div className="rounded-xl bg-slate-950/60 border border-slate-800/80 p-2.5 flex items-center justify-between text-xs mb-4">
-                <div className="flex items-center gap-1.5 text-amber-300 font-bold truncate">
-                  <Trophy className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                  <span className="truncate">{game.topRanker}</span>
-                </div>
-                <span className="text-[10px] text-slate-400 shrink-0">{game.statsText}</span>
-              </div>
+              {(() => {
+                const rankInfo = getRankInfo(game.id);
+                return (
+                  <div className="rounded-xl bg-slate-950/60 border border-slate-800/80 p-2.5 flex items-center justify-between text-xs mb-4">
+                    <div className="flex items-center gap-1.5 text-amber-300 font-bold truncate">
+                      <Trophy className="w-3.5 h-3.5 shrink-0 fill-amber-400 text-amber-400" />
+                      <span className="truncate">{rankInfo.topRanker}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 shrink-0">{rankInfo.statsText}</span>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Actions */}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Trophy, X, RefreshCw, Flame, Crown, Sparkles, AlertCircle, Trash2, RotateCcw } from 'lucide-react';
 import { GameType, LeaderboardEntry } from '../types';
-import { loadLeaderboards, resetLeaderboards, clearAllLeaderboards } from '../utils/storage';
+import { loadLeaderboards, resetLeaderboards } from '../utils/storage';
 import { soundEffects } from '../utils/audio';
 
 interface LeaderboardModalProps {
@@ -66,15 +66,8 @@ export default function LeaderboardModal({
   };
 
   const handleResetLeaderboard = () => {
-    soundEffects.powerup();
-    const updated = resetLeaderboards();
-    setEntries(updated);
-    setShowResetConfirm(false);
-  };
-
-  const handleClearAll = () => {
     soundEffects.out();
-    const updated = clearAllLeaderboards();
+    const updated = resetLeaderboards();
     setEntries(updated);
     setShowResetConfirm(false);
   };
@@ -342,18 +335,12 @@ export default function LeaderboardModal({
               </button>
             ) : (
               <div className="flex items-center gap-1.5 bg-rose-950/80 p-1 px-2 rounded-lg border border-rose-500/40 animate-in fade-in duration-150">
-                <span className="text-[11px] font-bold text-rose-300">정말 초기화할까요?</span>
+                <span className="text-[11px] font-bold text-rose-300">정말 모든 랭킹을 비울까요?</span>
                 <button
                   onClick={handleResetLeaderboard}
                   className="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-black transition-colors"
                 >
-                  기본값 복원
-                </button>
-                <button
-                  onClick={handleClearAll}
-                  className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-rose-200 text-[10px] font-black border border-rose-500/30 transition-colors"
-                >
-                  완전 삭제
+                  기록 전체 삭제
                 </button>
                 <button
                   onClick={() => setShowResetConfirm(false)}

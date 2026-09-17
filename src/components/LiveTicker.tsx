@@ -1,16 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Radio, Flame } from 'lucide-react';
-import { LIVE_TICKER_MESSAGES, RIVAL_NAMES } from '../utils/storage';
+import { LIVE_TICKER_MESSAGES, loadLeaderboards } from '../utils/storage';
+import { GameType } from '../types';
 
 interface LiveTickerProps {
   onOpenLeaderboard: () => void;
 }
 
+const GAME_TITLE_MAP: Record<GameType, string> = {
+  mario: '마리오 점프런',
+  baseball: '숫자 야구',
+  omok: '진검승부 오목',
+  nim: '수학 님 게임',
+  chess: '클래식 체스',
+};
+
 export default function LiveTicker({ onOpenLeaderboard }: LiveTickerProps) {
-  const [messages, setMessages] = useState<string[]>(LIVE_TICKER_MESSAGES);
+  const buildMessages = useCallback((): string[] => {
+    const entries = loadLeaderboards();
+    const realPlayerMsgs: string[] = [];
+
+    // 최근 기록 최대 5개 추출하여 실시간 속보로 표시
+    const recentEntries = entries.slice(0, 5);
+    for (const entry of recentEntries) {
+      if (entry && entry.playerName) {
+        const gameName = GAME_TITLE_MAP[entry.game] || '게임';
+        const grade = entry.gradeClass ? `[${entry.gradeClass} ${entry.playerName}]` : `[${entry.playerName}]`;
+        const scoreInfo = entry.subText || `${entry.score}점`;
+        realPlayerMsgs.push(`🔥 ${grade} ${gameName}에서 ${scoreInfo} 달성! (${entry.date || '최근'})`);
+      }
+    }
+
+    // 실제 등록된 기록 메시지 + 기본 아케이드 안내 메시지
+    return realPlayerMsgs.length > 0 ? [...realPlayerMsgs, ...LIVE_TICKER_MESSAGES] : LIVE_TICKER_MESSAGES;
+  }, []);
+
+  const [messages, setMessages] = useState<string[]>(() => buildMessages());
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Rotate ticker every 4.5 seconds and randomly inject a real-time event
+  // Rotate ticker every 4.5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % messages.length);
@@ -18,24 +46,21 @@ export default function LiveTicker({ onOpenLeaderboard }: LiveTickerProps) {
     return () => clearInterval(timer);
   }, [messages.length]);
 
-  // Simulate spontaneous school rivals breaking records
+  // Listen for leaderboard updates (new record saved, ranking reset, etc.)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const rival = RIVAL_NAMES[Math.floor(Math.random() * RIVAL_NAMES.length)];
-      const games = [
-        { name: '오목 AI', result: '연승 기록을 갱신했습니다!' },
-        { name: '숫자야구', result: '4회 만에 스트라이크 올킬!' },
-        { name: '마리오 점프런', result: `${Math.floor(Math.random() * 2000 + 2500)}점 돌파!` },
-        { name: '님 게임', result: '수학 천재 AI를 물리쳤습니다!' },
-        { name: '체스', result: '멋진 포크 전술로 승리!' },
-      ];
-      const g = games[Math.floor(Math.random() * games.length)];
-      const newMsg = `🔥 [${rival.class} ${rival.name}] ${g.name}에서 ${g.result}`;
-      
-      setMessages((prev) => [newMsg, ...prev.slice(0, 10)]);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    const handleUpdate = () => {
+      const updated = buildMessages();
+      setMessages(updated);
+      setCurrentIndex(0);
+    };
+
+    window.addEventListener('leaderboardUpdated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('leaderboardUpdated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [buildMessages]);
 
   return (
     <div className="bg-slate-950/70 border-b border-slate-800/80 px-4 py-1.5 overflow-hidden">
