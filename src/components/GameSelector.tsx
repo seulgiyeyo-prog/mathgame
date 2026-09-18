@@ -75,13 +75,13 @@ const GAMES: GameCardMeta[] = [
     id: 'chess',
     title: '클래식 체스',
     subtitle: 'Smart Chess Arena',
-    badge: '3D 입체말 & 가이드북',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+    badge: '체크 대응 & 고지능 AI',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     gradient: 'from-blue-500/10 via-indigo-500/5 to-slate-900',
     borderHover: 'hover:border-blue-400/60',
     icon: '♟️',
-    description: '체스판 테마 색상 변경(원목/에메랄드/블루/흑요석)과 입체 3D 기물, 상세 이동 가이드북 탑재!',
-    features: ['4가지 체스판 테마 색상', '정교한 입체 3D 말 & 가이드', '폰 퀸 승급 & AI 대결'],
+    description: '알파베타 수읽기 AI 탑재! 체크 회피와 3단계 난이도(초급/중급/마스터), 실시간 기물 밸런스 분석 지원.',
+    features: ['알파베타 미니맥스 AI', '체크 경고 & 합법수 필터', '초급/중급/마스터 3단계'],
   },
 ];
 

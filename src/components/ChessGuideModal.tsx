@@ -125,7 +125,10 @@ export default function ChessGuideModal({ isOpen, onClose }: ChessGuideModalProp
                 <strong>백(White) 선공</strong>: 백군이 항상 먼저 첫 수를 두고, 흑군과 번갈아 가며 한 수씩 둡니다.
               </li>
               <li>
-                <strong>체크(Check)와 체크메이트(Checkmate)</strong>: 상대의 킹을 공격하는 것을 체크, 킹이 어디로도 도망치거나 방어할 수 없게 완전히 포위하면 <strong>체크메이트 승리</strong>가 됩니다!
+                <strong>체크(Check)와 대응 3원칙</strong>: 내 킹이 적에게 조준당하면 즉시 <strong>① 킹이 안전한 칸으로 피하기, ② 아군 기물로 공격 경로를 가로막기, ③ 공격하는 적의 기물을 잡아내기</strong> 중 하나로 반드시 벗어나야 합니다.
+              </li>
+              <li>
+                <strong>체크메이트(Checkmate)</strong>: 체크를 피할 수 있는 합법적인 수가 전혀 없다면 체크메이트로 게임이 끝납니다!
               </li>
               <li>
                 <strong>폰 승급(Promotion)</strong>: 폰이 상대 진영 끝까지 살아남아 전진하면 <strong>가장 강력한 퀸(Queen)</strong>으로 자동 승급합니다!
